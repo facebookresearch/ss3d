@@ -1,7 +1,7 @@
 # [Pre-train, Self-train, Distill: A simple recipe for Supersizing 3D Reconstruction](https://shubhtuls.github.io/ss3d/)
 Kalyan Vasudev Alwala, Abhinav Gupta, Shubham Tulsiani
 
-[[Paper](todo)] [[Project Page](https://shubhtuls.github.io/ss3d/)]
+[[Paper](https://arxiv.org/abs/2204.03642)] [[Project Page](https://shubhtuls.github.io/ss3d/)]
 
 <img src="https://shubhtuls.github.io/ss3d/resources/teaser.gif" width="50%">
 
