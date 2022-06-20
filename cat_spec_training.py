@@ -11,6 +11,10 @@ import numpy as np
 import submitit
 import torch
 from data.generic_img_mask_loader import GenericImgMaskModule
+from data.warehouse3d import (
+    get_rays_multiplex,
+    extract_data_train,
+)
 from hydra_config import config
 from model import get_model
 from mpl_toolkits.mplot3d import axes3d
@@ -730,7 +734,7 @@ def train_model(cfg):
     checkpoint_callback = ModelCheckpoint(
         save_top_k=-1,
         every_n_val_epochs=cfg.optim.save_freq,
-        filename="{epoch}",
+        filename="checkpoint_{epoch}",
     )
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -745,10 +749,9 @@ def train_model(cfg):
         print(cfg)
         model = VolumetricNetwork(cfg=cfg)
         if cfg.optim.use_pretrain:
-            checkpoint_cfg = cfg.optim.pretrain_checkpoint
-            checkpoint_path = config.extract_ckpt_path(checkpoint_cfg)
-            checkpoint = osp.join(_base_path, cfg.logging.log_dir, checkpoint_path)
-            temp_model = VolumetricNetworkCkpt.load_from_checkpoint(checkpoint)
+            temp_model = VolumetricNetwork.load_from_checkpoint(
+                cfg.optim.checkpoint_path
+            )
             model.model.load_state_dict(temp_model.model.state_dict())
         else:
             checkpoint = None
@@ -759,7 +762,7 @@ def train_model(cfg):
             num_nodes=cfg.resources.num_nodes,
             val_check_interval=cfg.optim.val_check_interval,
             limit_val_batches=cfg.optim.num_val_iter,
-            checkpoint_callback=checkpoint_callback,
+            # checkpoint_callback=checkpoint_callback,
             # resume_from_checkpoint=checkpoint,
             resume_from_checkpoint=None,  # Only loading weights
             max_epochs=cfg.optim.stage_one_epochs,
@@ -787,10 +790,7 @@ def train_model(cfg):
     print(cfg)
     model = VolumetricNetwork(cfg=cfg)
     if cfg.optim.use_pretrain:
-        checkpoint_cfg = cfg.optim.pretrain_checkpoint
-        checkpoint_path = config.extract_ckpt_path(checkpoint_cfg)
-        checkpoint = osp.join(_base_path, cfg.logging.log_dir, checkpoint_path)
-        temp_model = VolumetricNetworkCkpt.load_from_checkpoint(checkpoint)
+        temp_model = VolumetricNetwork.load_from_checkpoint(cfg.optim.checkpoint_path)
         model.model.load_state_dict(temp_model.model.state_dict())
     else:
         checkpoint = None

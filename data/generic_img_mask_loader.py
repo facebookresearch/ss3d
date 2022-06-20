@@ -54,7 +54,7 @@ def get_tight_bbox(mask):
     x1, x2 = get_left_right(col_agg)
     y1, y2 = get_left_right(row_agg)
 
-    return x1, y1, x2, y2
+    return np.array([x1, y1, x2, y2])
 
 
 def read_paths_and_boxes(file_path, data_cfg):
@@ -107,7 +107,6 @@ def read_paths_and_boxes(file_path, data_cfg):
                     "bbox": bbox,
                     "rgb_path": rgb_path,
                     "mask_path": mask_path,
-                    "iou": row["truncated"],
                 }
             )
             cls_counter += 1
@@ -163,6 +162,9 @@ class GenericImgMaskDataset(Dataset):
         mask_image = imageio.imread(mask_path)
         mask_image = (torch.Tensor(mask_image)).float() / 255.0
 
+        if len(mask_image.shape) == 3:
+            mask_image = mask_image[..., -1]
+
         mask_image = torch_F.interpolate(
             mask_image.unsqueeze(0).unsqueeze(0),
             (raw_rgb_img.shape[0], raw_rgb_img.shape[1]),
@@ -177,10 +179,10 @@ class GenericImgMaskDataset(Dataset):
         )
 
         img_shape = mask_image.shape
-        bbox[0] *= img_shape[1]
-        bbox[2] *= img_shape[1]
-        bbox[1] *= img_shape[0]
-        bbox[3] *= img_shape[0]
+        # bbox[0] *= img_shape[1]
+        # bbox[2] *= img_shape[1]
+        # bbox[1] *= img_shape[0]
+        # bbox[3] *= img_shape[0]
         bbox = bbox.astype(int)
 
         if len(mask_image.shape) == 3:

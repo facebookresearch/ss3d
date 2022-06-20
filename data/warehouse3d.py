@@ -307,20 +307,16 @@ class WareHouse3DModule(LightningDataModule):
     def train_dataloader(self):
 
         assert self.render_cfg.cam_num > 0, "camera number cannot be 0"
-
-        if (
-            self.trainer
-            and torch.distributed.is_available()
-            and torch.distributed.is_initialized()
-        ):
-            sampler = DistributedSampler(train_ds)
-
         train_ds = WareHouse3DDataset(
             self.data_cfg.rgb_dir,
             self.train_split,
             self.render_cfg,
             self.data_cfg.encoder_dir,
         )
+        sampler = None
+        if torch.distributed.is_available() and torch.distributed.is_initialized():
+            sampler = DistributedSampler(train_ds)
+
         return torch.utils.data.DataLoader(
             train_ds,
             batch_size=self.data_cfg.bs_train,

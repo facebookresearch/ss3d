@@ -218,6 +218,7 @@ class VNet(nn.Module):
         model._device = device
         return model
 
+
 def get_model(model_cfg):
     # TODO: Add more functionality to this method to enable building model from cfgs.
     return VNet()

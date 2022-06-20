@@ -2,6 +2,7 @@ import os, sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import fnmatch
 import math
 import os
 import os.path as osp
@@ -49,7 +50,7 @@ class VolumetricNetworkCkpt(LightningModule):
 
 
 def get_pl_datamodule(cfg):
-    if cfg.data.name == "generic_img_mask":
+    if cfg.data.name == "common_dl":  # generic_img_mask
         dataLoaderMethod = GenericImgMaskModule
     else:
         dataLoaderMethod = WareHouse3DModule
@@ -136,26 +137,25 @@ class DistillationDataset(Dataset):
         }
 
 
-def get_paths(root_dir, epoch_num=49, exclude_names=""):
-    if exclude_names != "":
-        exclude_names = exclude_names.split(",")
+def get_paths(root_dir, regex_match, regex_exclude=""):
+    if regex_exclude != "":
+        regex_exclude = regex_exclude.split(",")
     else:
-        exclude_names = []
+        regex_exclude = []
 
     out_paths = []
     for root, d_names, f_names in os.walk(root_dir):
         for f in f_names:
-            if str(epoch_num) + ".ckpt" in f:
 
-                path = os.path.join(root, f)
+            path = os.path.join(root, f)
 
-                is_exclude = False
-                for ex in exclude_names:
-                    if ex in path:
-                        is_exclude = True
+            in_exclude = False
+            for ex_re in regex_exclude:
+                if fnmatch.fnmatch(path, ex_re):
+                    in_exclude = True
 
-                if not is_exclude:
-                    out_paths.append(path)
+            if fnmatch.fnmatch(path, regex_match) and (not in_exclude):
+                out_paths.append(path)
 
     return out_paths
 
@@ -169,8 +169,8 @@ class DistillationDataModule(LightningDataModule):
         assert cfg.distillation.ckpts_root_dir is not None
         checkpoint_paths = get_paths(
             cfg.distillation.ckpts_root_dir,
-            cfg.distillation.ckpts_epoch_num,
-            exclude_names=cfg.distillation.exclude_names,
+            cfg.distillation.regex_match,
+            cfg.distillation.regex_exclude,
         )
         checkpoint_paths = [cfg.distillation.warehouse3d_ckpt_path] + checkpoint_paths
         print("!!!!!!!!!!!!!Loading checkpoints from root dir for dataloader!!!!!!!!")

@@ -8,6 +8,7 @@ import time
 import imageio
 import numpy as np
 import pytorch3d
+import pytorch3d.renderer
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

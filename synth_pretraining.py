@@ -263,7 +263,6 @@ def train_model(cfg):
         data_cfg=cfg.data,
         render_cfg=cfg.render,
         num_workers=cfg.resources.num_workers,
-        # debug_mode=cfg.resources.debug_mode,
     )
 
     model = VolumetricNetwork(cfg=cfg)
@@ -277,14 +276,11 @@ def train_model(cfg):
     checkpoint_callback = ModelCheckpoint(
         save_top_k=-1,
         every_n_val_epochs=cfg.optim.save_freq,
-        filename="{epoch}",
+        filename="checkpoint_{epoch}",
     )
 
     if cfg.optim.use_pretrain:
-        checkpoint_cfg = cfg.optim.pretrain_checkpoint
-        checkpoint_path = config.extract_ckpt_path(checkpoint_cfg)
-        checkpoint = osp.join(_base_path, cfg.logging.log_dir, checkpoint_path)
-        temp_model = VolumetricNetwork.load_from_checkpoint(checkpoint)
+        temp_model = VolumetricNetwork.load_from_checkpoint(cfg.optim.checkpoint_path)
         model.model.load_state_dict(temp_model.model.state_dict())
     else:
         checkpoint = None

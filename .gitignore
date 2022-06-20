@@ -1,5 +1,7 @@
 *.obj
+data/*__pycache__/*
 __pycache__/*
+*/__pycache__/*
 *.DS_Store
 *.o
 *.a
@@ -26,3 +28,4 @@ ipyNb
 *.fdb_latexmk
 #*.ipynb
 volumetric_networks.egg-info
+job_outputs/*

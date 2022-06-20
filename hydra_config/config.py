@@ -17,7 +17,6 @@ defaults = [
     {"logging": "tensorboard"},
     {"model": "vnet"},
     {"optim": "default"},
-    {"optim.pretrain_checkpoint": "default"},
     {"resources": "default"},
     {"data": "warehouse3d"},
     {"render": "default"},
@@ -29,15 +28,15 @@ defaults = [
 @dataclass
 class DataConfig:
     # name: str = ""
-    bs_train: int = 16
+    bs_train: int = 1
     bs_val: int = 1
     num_workers: int = 0
 
 
 @dataclass
 class Warehouse3DData(DataConfig):
-    train_split: float = 0.9
-    validation_split: float = 0.1
+    train_split: float = 0.95
+    validation_split: float = 0.05
     encoder_dir: str = (
         "/private/home/kalyanv/learning_vision3d/datasets/blender/renders_encoder"
     )
@@ -46,21 +45,21 @@ class Warehouse3DData(DataConfig):
 
     # class_ids: str = "02691156,03001627,03790512"
     class_ids: str = "02858304,02924116,03790512,04468005,\
-02992529,02843684,02954340,02691156,\
-02933112,03001627,03636649,04090263,\
-04379243,04530566,02828884,02958343,\
-03211117,03691459,04256520,04401088,\
-02747177,02773838,02801938,02808440,\
-02818832,02834778,02871439,02876657,\
-02880940,02942699,02946921,03085013,\
-03046257,03207941,03261776,03325088,\
-03337140,03467517,03513137,03593526,\
-03624134,03642806,03710193,03759954,\
-03761084,03797390,03928116,03938244,\
-03948459,03991062,04004475,04074963,\
-04099429,04225987,04330267,04460130,04554684"
+    02992529,02843684,02954340,02691156,\
+    02933112,03001627,03636649,04090263,\
+    04379243,04530566,02828884,02958343,\
+    03211117,03691459,04256520,04401088,\
+    02747177,02773838,02801938,02808440,\
+    02818832,02834778,02871439,02876657,\
+    02880940,02942699,02946921,03085013,\
+    03046257,03207941,03261776,03325088,\
+    03337140,03467517,03513137,03593526,\
+    03624134,03642806,03710193,03759954,\
+    03761084,03797390,03928116,03938244,\
+    03948459,03991062,04004475,04074963,\
+    04099429,04225987,04330267,04460130,04554684"
     name: str = "warehouse3d"
-    bs_train: int = 1
+    bs_train: int = 4
     bs_val: int = 1
     bs_test: int = 1
     num_workers: int = 0
@@ -97,9 +96,9 @@ class RenderConfig:
     far_plane: float = 2.5  # TODO:tune this
     camera_near_dist: float = 1.3  # TODO: tune this
     camera_far_dist: float = 1.7  # TODO: tune this
-    cam_num: int = 1  # if -1, render on fly, dont use prerend
-    num_pre_rend_masks: int = 100  # -1 corresponds to use all
-    ray_num_per_cam: int = 360 * 4  # TODO: tune this
+    cam_num: int = 5  # if -1, render on fly, dont use prerend
+    num_pre_rend_masks: int = 50  # -1 corresponds to use all
+    ray_num_per_cam: int = 340  # TODO: tune this
     on_ray_num_samples: int = 80  # TODO: tune this
     rgb: bool = True
     normals: bool = False
@@ -137,19 +136,18 @@ def extract_ckpt_path(cfg):
 class OptimizationConfig:
     val_check_interval: float = 1  # 300
     num_val_iter: int = 20
-    save_freq: int = 1
+    save_freq: int = 25
     max_epochs: int = 3000
-    stage_one_epochs: int = 400
+    stage_one_epochs: int = 2
     lr: float = 0.00005
     use_scheduler: bool = False
     use_pretrain: bool = False
-    pretrain_checkpoint: CheckpointConfig = MISSING
+    checkpoint_path: str = "somepath"
 
     use_shape_reg: bool = False
 
 
 cs.store(group="optim", name="default", node=OptimizationConfig)
-cs.store(group="optim.pretrain_checkpoint", name="default", node=CheckpointConfig)
 
 
 @dataclass
@@ -173,7 +171,7 @@ class ModelConfig:
 @dataclass
 class VNetConfig(ModelConfig):
     encoder: str = "resnet34_res_fc"
-    decoder: str = "siren"
+    decoder: str = "siren_rgb"
     c_dim: int = 2560
     inp_dim: int = 3
     fine_tune: str = "all"  # "encoder" or "decoder" or "none"
@@ -189,11 +187,10 @@ class ResourceConfig:
     num_nodes: int = 1
     num_workers: int = 0
     accelerator: Any = "ddp"  # ddp or dp or none
-    debug_mode: bool = False
 
     # cluster specific config
     use_cluster: bool = False
-    max_mem: bool = False  # if true use volta32gb on cluster
+    max_mem: bool = False  # if true use volta32gb for SLURM jobs.
     time: int = 60 * 36  # minutes
     partition: str = "dev"
     comment: str = "please fill this if using priority partition"
@@ -212,13 +209,15 @@ class DistillationConfig:
 
     num_points: int = 1000
     sample_bounds: List[float] = field(default_factory=lambda: [-0.6, 0.6])
-    ckpts_root_dir: str = ""
-    ckpts_epoch_num: int = 49
+
     use_encoder_transforms: bool = False
 
     warehouse3d_prob: float = 0.3
-    warehouse3d_ckpt_path: str = "/private/home/kalyanv/volumetric_networks/experiments/cachedir/siren_all_mesh_4node_resnet_34_res_fc_pre_render_100_5_cam_57_class_new_loader_scheduler/version_2/checkpoints/epoch=464.ckpt"
-    exclude_names: str = ""
+    warehouse3d_ckpt_path: str = ""
+
+    ckpts_root_dir: str = ""
+    regex_exclude: str = ""
+    regex_match: str = ""
 
 
 cs.store(group="distillation", name="empty", node=DistillationConfig)

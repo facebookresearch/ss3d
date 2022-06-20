@@ -118,10 +118,11 @@ class VolumetricNetwork(LightningModule):
         self.distillation_ckpts = []
 
         assert self.cfg.distillation.ckpts_root_dir is not None
+
         checkpoint_paths = get_paths(
             self.cfg.distillation.ckpts_root_dir,
-            self.cfg.distillation.ckpts_epoch_num,
-            self.cfg.distillation.exclude_names,
+            self.cfg.distillation.regex_match,
+            self.cfg.distillation.regex_exclude,
         )
         checkpoint_paths = [
             self.cfg.distillation.warehouse3d_ckpt_path
@@ -329,6 +330,7 @@ class VolumetricNetwork(LightningModule):
         if self.use_encoder_transforms:
             inp_imgs = self._process_encoder_images(inp_imgs)
 
+        self.model.to(self.device)
         c_latent = self.model.encoder(inp_imgs)
         preds_raw = network_query_fn_train(query_points, c_latent, self.model.decoder)
 
@@ -407,6 +409,7 @@ class VolumetricNetwork(LightningModule):
         if self.use_encoder_transforms:
             inp_imgs = self._process_encoder_images(inp_imgs)
 
+        self.model.to(self.device)
         c_latent = self.model.encoder(inp_imgs)  # [N, c_dim]
         # For instance, C = [[1,2],[3,4]] and num_rays = 2
         # below lines return C = [[1,2],[1,2],[3,4],[3,4]]
@@ -482,14 +485,13 @@ def train_model(cfg):
     checkpoint_callback = ModelCheckpoint(
         save_top_k=-1,
         every_n_val_epochs=cfg.optim.save_freq,
-        filename="{epoch}",
+        filename="checkpoint_{epoch}",
     )
 
     if cfg.optim.use_pretrain:
-        checkpoint_cfg = cfg.optim.pretrain_checkpoint
-        checkpoint_path = config.extract_ckpt_path(checkpoint_cfg)
-        checkpoint = osp.join(_base_path, cfg.logging.log_dir, checkpoint_path)
-        temp_model = VolumetricNetworkCkpt.load_from_checkpoint(checkpoint)
+        temp_model = VolumetricNetworkCkpt.load_from_checkpoint(
+            cfg.optim.checkpoint_path
+        )
         model.model.load_state_dict(temp_model.model.state_dict())
     else:
         checkpoint = None
