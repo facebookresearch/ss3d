@@ -42,7 +42,7 @@ out_mesh.show()
 ```
 
 ## Training and Evaluation
-* coming soon
+Please to [README_TRAINING.md](https://github.com/facebookresearch/ss3d/blob/main/README_TRAINING.md) for more details.
 
 
 ## Citation
