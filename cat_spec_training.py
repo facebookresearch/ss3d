@@ -6,7 +6,6 @@ import os.path as osp
 import pdb
 
 import hydra
-import matplotlib.pyplot as plt
 import numpy as np
 import submitit
 import torch
@@ -17,7 +16,6 @@ from data.warehouse3d import (
 )
 from hydra_config import config
 from model import get_model
-from mpl_toolkits.mplot3d import axes3d
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint

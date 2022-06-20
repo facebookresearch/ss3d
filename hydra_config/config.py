@@ -37,11 +37,12 @@ class DataConfig:
 class Warehouse3DData(DataConfig):
     train_split: float = 0.95
     validation_split: float = 0.05
+
+    # If its not seperately rendered, it should be same as rgb_dir
     encoder_dir: str = (
         "/private/home/kalyanv/learning_vision3d/datasets/blender/renders_encoder"
     )
     rgb_dir: str = "/private/home/kalyanv/learning_vision3d/datasets/blender/renders"
-    mask_dir: str = "/private/home/kalyanv/learning_vision3d/datasets/snet_pre_rendered_masks_all_100_new"
 
     # class_ids: str = "02691156,03001627,03790512"
     class_ids: str = "02858304,02924116,03790512,04468005,\
@@ -59,7 +60,7 @@ class Warehouse3DData(DataConfig):
     03948459,03991062,04004475,04074963,\
     04099429,04225987,04330267,04460130,04554684"
     name: str = "warehouse3d"
-    bs_train: int = 4
+    bs_train: int = 8
     bs_val: int = 1
     bs_test: int = 1
     num_workers: int = 0
@@ -92,14 +93,14 @@ cs.store(group="data", name="warehouse3d", node=Warehouse3DData)
 class RenderConfig:
     img_size: int = 128
     focal_length: int = 300
-    near_plane: float = 0.1  # TODO:tune this
-    far_plane: float = 2.5  # TODO:tune this
-    camera_near_dist: float = 1.3  # TODO: tune this
-    camera_far_dist: float = 1.7  # TODO: tune this
+    near_plane: float = 0.1
+    far_plane: float = 2.5
+    camera_near_dist: float = 1.3
+    camera_far_dist: float = 1.7
     cam_num: int = 5  # if -1, render on fly, dont use prerend
     num_pre_rend_masks: int = 50  # -1 corresponds to use all
-    ray_num_per_cam: int = 340  # TODO: tune this
-    on_ray_num_samples: int = 80  # TODO: tune this
+    ray_num_per_cam: int = 340
+    on_ray_num_samples: int = 80
     rgb: bool = True
     normals: bool = False
     depth: bool = False
@@ -137,8 +138,8 @@ class OptimizationConfig:
     val_check_interval: float = 1  # 300
     num_val_iter: int = 20
     save_freq: int = 25
-    max_epochs: int = 3000
-    stage_one_epochs: int = 2
+    max_epochs: int = 475
+    stage_one_epochs: int = 10
     lr: float = 0.00005
     use_scheduler: bool = False
     use_pretrain: bool = False
@@ -190,7 +191,7 @@ class ResourceConfig:
 
     # cluster specific config
     use_cluster: bool = False
-    max_mem: bool = False  # if true use volta32gb for SLURM jobs.
+    max_mem: bool = True  # if true use volta32gb for SLURM jobs.
     time: int = 60 * 36  # minutes
     partition: str = "dev"
     comment: str = "please fill this if using priority partition"

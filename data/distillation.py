@@ -19,7 +19,6 @@ import scipy.misc
 import torch
 import torch.nn.functional as torch_F
 import torchvision.transforms.functional as F
-import trimesh
 from data.generic_img_mask_loader import GenericImgMaskModule
 from data.warehouse3d import WareHouse3DModule
 from hydra_config import config
