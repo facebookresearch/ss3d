@@ -1,3 +1,12 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+# Some functions in this code are borrowed from https://github.com/yenchenlin/nerf-pytorc
+# Copyright (c) 2020 bmild, MIT License
+
 import json
 import math
 import os
